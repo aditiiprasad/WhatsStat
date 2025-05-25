@@ -386,6 +386,7 @@ if uploaded_file is not None:
 
 
 
+
 # Footer
 st.markdown("""
 <hr style="margin-top: 50px; border: none; border-top: 2px solid #25D366;" />
@@ -396,4 +397,5 @@ st.markdown("""
     <a href="https://www.linkedin.com/in/aditiiprasad/" target="_blank" style="text-decoration: none; color: #128C7E; font-weight: 600;">LinkedIn</a>
 </div>
 """, unsafe_allow_html=True)
+
         
