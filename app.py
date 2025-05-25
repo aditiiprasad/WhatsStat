@@ -106,8 +106,8 @@ st.markdown("""
     <h1 style="margin: 0;">📱 WhatsStat</h1>
     <div style="text-align: right; font-size: 16px;">
         <p style="margin: 0;">👩‍💻 Developed by <strong>Aditi</strong></p>
-        <a href="https://github.com/yourusername" target="_blank" style="margin-right: 10px;"> GitHub</a>
-        <a href="https://www.linkedin.com/in/yourusername/" target="_blank"> LinkedIn</a>
+        <a href="https://github.com/aditiiprasad" target="_blank" style="margin-right: 10px;"> GitHub</a>
+        <a href="https://www.linkedin.com/in/aditiiprasad/" target="_blank"> LinkedIn</a>
     </div>
 </div>
             
@@ -183,8 +183,7 @@ if uploaded_file is not None:
                 </div>
                 <div class="message-text">
                     {message}
-                </div>
-            </div>
+              
             """, unsafe_allow_html=True)
 
         # Most active users 
@@ -385,4 +384,16 @@ if uploaded_file is not None:
             st.pyplot(fig)
             plt.close(fig)
 
+
+
+# Footer
+st.markdown("""
+<hr style="margin-top: 50px; border: none; border-top: 2px solid #25D366;" />
+
+<div style="text-align: center; padding: 20px 0; font-size: 14px; color: #555;">
+    Developed with ❤️ by <strong>Aditi</strong> <br>
+    <a href="https://github.com/aditiiprasad" target="_blank" style="text-decoration: none; color: #128C7E; font-weight: 600;">GitHub</a> |
+    <a href="https://www.linkedin.com/in/aditiiprasad/" target="_blank" style="text-decoration: none; color: #128C7E; font-weight: 600;">LinkedIn</a>
+</div>
+""", unsafe_allow_html=True)
         
