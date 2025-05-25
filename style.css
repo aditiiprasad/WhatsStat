@@ -1,0 +1,92 @@
+.stApp {
+    background-color: #dfecdd;
+    color: #111b21;
+    font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.css-1d391kg {
+    background-color: #075E54 !important;
+    color: white !important;
+}
+
+.css-1d391kg .stSelectbox, 
+.css-1d391kg .stButton>button {
+    background-color: #25D366 !important;
+    color: white !important;
+    border-radius: 25px !important;
+    border: none !important;
+    font-weight: 600;
+}
+
+div.stButton > button {
+    background-color: #25D366 !important;
+    color: white !important;
+    border-radius: 20px !important;
+    padding: 8px 20px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    transition: background-color 0.3s ease;
+}
+
+div.stButton > button:hover {
+    background-color: #128C7E !important;
+    cursor: pointer;
+}
+
+.stMetric > div {
+    background: white !important;
+    border-radius: 15px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 15px;
+    color: #075E54 !important;
+    font-weight: 700 !important;
+}
+
+h1, h2, h3, h4 {
+    color: #075E54 !important;
+    font-weight: 700 !important;
+}
+
+.streamlit-expanderHeader {
+    font-weight: 700 !important;
+    color: #075E54 !important;
+}
+
+.dataframe tbody tr:hover {
+    background-color: #DFF6DD !important;
+}
+
+.stPyplot, .stPlotlyChart {
+    border-radius: 15px !important;
+    background: white !important;
+    padding: 10px !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.css-1d391kg .stSelectbox > div > div > div {
+    padding: 6px 12px !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+}
+
+.css-1cpxqw2 {
+    color: #083c30 !important;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.stMetricLabel {
+    color: #083c30 !important;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.st-emotion-cache-qoz3f2 {
+    font-family: "Source Sans Pro", sans-serif;
+    font-size: 0.875rem;
+    color: #083c30;
+}
+
+.st-emotion-cache-seewz2 {
+    color: #25D366;
+}
