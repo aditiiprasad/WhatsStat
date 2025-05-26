@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import helper
+import os
 
 st.set_page_config(layout='wide')
 
@@ -89,8 +90,39 @@ st.markdown("""
     align-items: center;
     margin: 20px 0;
 }
+
+/* Sample button styling */
+.sample-button {
+    background: linear-gradient(135deg, #FF6B35, #F7931E) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 25px !important;
+    padding: 10px 20px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3) !important;
+}
 </style>
 """, unsafe_allow_html=True)
+
+# Function to load sample data
+def load_sample_data():
+    """Load sample WhatsApp chat data from existing .txt file in root directory"""
+    
+    sample_files = ["sample_chat.txt", "sample.txt", "demo_chat.txt", "whatsapp_sample.txt"]
+    
+    for sample_file_path in sample_files:
+        if os.path.exists(sample_file_path):
+            try:
+                with open(sample_file_path, 'r', encoding='utf-8') as file:
+                    return file.read()
+            except Exception as e:
+                st.error(f"Error reading sample file {sample_file_path}: {str(e)}")
+                continue
+    
+    st.error("Sample file not found in root directory. Please make sure your sample .txt file exists.")
+    return None
 
 # Sidebar instructions
 with st.sidebar:
@@ -98,7 +130,6 @@ with st.sidebar:
     st.markdown("1. Export chat from WhatsApp **without media**")
     st.markdown("2. A `.zip` file will be created")
     st.markdown("3. Unzip it and upload the `.txt` file below")
-
 
 # header 
 st.markdown("""
@@ -114,15 +145,33 @@ st.markdown("""
  ---           
 """, unsafe_allow_html=True)
 
+# Chat file upload and sample button
+st.markdown("### Upload your chat file or try with sample data")
 
-# Chat file upload
-st.markdown("### Upload your chat file")
-uploaded_file = st.file_uploader("Choose a WhatsApp chat file (.txt)", type="txt")
+col1, col2 = st.columns([3, 1])
+with col1:
+    uploaded_file = st.file_uploader("Choose a WhatsApp chat file (.txt)", type="txt")
 
-if uploaded_file is not None:
-    # Decode and preprocess
-    bytes_data = uploaded_file.getvalue()
-    data = bytes_data.decode("utf-8")
+with col2:
+    st.markdown("<br>", unsafe_allow_html=True)  # Add some spacing
+    use_sample = st.button("🎯 Try Sample Data", help="Load sample WhatsApp chat for demo")
+
+if uploaded_file is not None or use_sample:
+    # Initialize data variable
+    data = None
+    
+    if use_sample:
+        # Load sample data
+        data = load_sample_data()
+        if data is None:
+            st.stop()  # Stop execution if sample data couldn't be loaded
+        st.success("✅ Sample data loaded successfully!")
+    else:
+        # Decode uploaded file
+        bytes_data = uploaded_file.getvalue()
+        data = bytes_data.decode("utf-8")
+    
+    # Preprocess the data
     df = preprocessor.preprocess(data)
 
     user_list = df['user'].unique().tolist()
@@ -183,7 +232,8 @@ if uploaded_file is not None:
                 </div>
                 <div class="message-text">
                     {message}
-              
+                </div>
+            </div>
             """, unsafe_allow_html=True)
 
         # Most active users 
@@ -280,7 +330,6 @@ if uploaded_file is not None:
             lang_df = helper.detect_languages(selected_user, df)
             st.dataframe(lang_df, use_container_width=True)        
 
-
         # Timeline charts
         st.markdown("## 📅 Timeline Analysis")
         col1, col2 = st.columns(2)
@@ -353,8 +402,6 @@ if uploaded_file is not None:
             st.pyplot(fig)
             plt.close(fig)
 
-        
-
         # Emoji and Sentiment Analysis
         st.markdown("## 😄 Emoji & Sentiment Analysis")
         col1, col2, col3 = st.columns(3)
@@ -384,9 +431,6 @@ if uploaded_file is not None:
             st.pyplot(fig)
             plt.close(fig)
 
-
-
-
 # Footer
 st.markdown("""
 <hr style="margin-top: 50px; border: none; border-top: 2px solid #25D366;" />
@@ -397,5 +441,3 @@ st.markdown("""
     <a href="https://www.linkedin.com/in/aditiiprasad/" target="_blank" style="text-decoration: none; color: #128C7E; font-weight: 600;">LinkedIn</a>
 </div>
 """, unsafe_allow_html=True)
-
-        
