@@ -1,273 +1,269 @@
-# ui/components.py
 import streamlit as st
-import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import seaborn as sns
 import helper
+import pandas as pd
 
 def render_sidebar():
-    """Render sidebar with instructions"""
     with st.sidebar:
         st.markdown("## 📁 Instructions")
-        st.markdown("1. Export chat from WhatsApp **without media**")
-        st.markdown("2. A `.zip` file will be created")
-        st.markdown("3. Unzip it and upload the `.txt` file below")
+        st.info("1. Open WhatsApp Chat\n2. More Options -> Export Chat\n3. Choose **'Without Media'**\n4. Upload the `.txt` file here")
+        st.markdown("---")
+        st.caption("🔒 Your data is processed locally in your browser/server instance and is not stored.")
 
 def render_header():
-    """Render main header"""
     st.markdown("""
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h1 style="margin: 0;">📱 WhatsStat</h1>
-        <div style="text-align: right; font-size: 16px;">
-            <p style="margin: 0;">👩‍💻 Developed by <strong>Aditi</strong></p>
-            <a href="https://github.com/aditiiprasad" target="_blank" style="margin-right: 10px;"> GitHub</a>
-            <a href="https://www.linkedin.com/in/aditiiprasad/" target="_blank"> LinkedIn</a>
-        </div>
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #075E54; margin-bottom: 0;">📱 WhatsStat</h1>
+        <p style="color: #666; font-size: 18px;">Advanced WhatsApp Chat Analyzer</p>
     </div>
-                
-     ---           
     """, unsafe_allow_html=True)
 
 def render_stats_section(selected_user, df):
-    """Render top statistics section"""
-    st.markdown("## 🔢 Top Stats")
-    num_messages, words, _, num_links = helper.fetch_stats(selected_user, df)
-    col1, col2, col3 = st.columns(3)
+    st.markdown("## 🔢 Top Statistics")
+    num_messages, words, num_media, num_links = helper.fetch_stats(selected_user, df)
+    
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Total Messages", num_messages)
+        st.metric("Total Messages", f"{num_messages:,}")
     with col2:
-        st.metric("Total Words", words)
+        st.metric("Total Words", f"{words:,}")
     with col3:
-        st.metric("Links Shared", num_links)
+        st.metric("Media Shared", f"{num_media:,}")
+    with col4:
+        st.metric("Links Shared", f"{num_links:,}")
+        
+    st.markdown("---")
 
 def render_longest_message_section(df):
-    """Render longest message section"""
-    st.markdown("## 📝 Longest Message Sender")
     user, message, length = helper.longest_message_sender(df)
-    st.write(f"**{user}** sent the longest message ({length} characters):")
     
-    # message display
-    with st.expander("📖 View Longest Message", expanded=False):
-        st.markdown(f"""
-        <div class="message-container">
-            <div class="message-header">
-                👤 From: <strong>{user}</strong> | 📏 Length: <strong>{length} characters</strong>
-            </div>
-            <div class="message-text">
-                {message}
-            
-        """, unsafe_allow_html=True)
+    st.markdown("### 🏆 Longest Message Champion")
+    st.markdown(f"""
+    <div class="message-container">
+        <div class="message-header">👤 {user} | 📏 {length} Characters</div>
+        <div class="message-text">"{message[:500]}..."</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    with st.expander("📖 Read Full Message"):
+        st.write(message)
 
 def render_most_active_users_section(selected_user, df):
-    """Render most active users section"""
     if selected_user == 'Overall':
-        st.markdown("## 🧑‍🤝‍🧑 Most Active Users")
+        st.markdown("## 👑 Most Active Users")
         x, new_df = helper.most_busy_users(df)
-        col1, col2 = st.columns([1, 1])
+        
+        col1, col2 = st.columns([1.5, 1])
+        
         with col1:
-            fig, ax = plt.subplots(figsize=(6, 4))
-            ax.bar(x.index, x.values, color='#25D366')
-            plt.xticks(rotation=45, fontsize=8)
-            plt.yticks(fontsize=8)
-            plt.tight_layout()
-            st.pyplot(fig)
-            plt.close(fig)
+            fig = px.bar(
+                x, x=x.index, y=x.values,
+                labels={'x': 'User', 'y': 'Message Count'},
+                color=x.values,
+                color_continuous_scale='Greens'
+            )
+            fig.update_layout(showlegend=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+            st.plotly_chart(fig, use_container_width=True)
+            
         with col2:
-            st.dataframe(new_df, use_container_width=True)
+            st.markdown("### 📊 User Breakdown")
+            st.dataframe(new_df, hide_index=True, use_container_width=True)
 
 def render_text_analysis_section(selected_user, df):
-    """Render word analysis section"""
-    st.markdown("## 📊 Text Analysis")
+    st.markdown("## 🔤 Text Analysis")
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("### ☁️ WordCloud")
+        st.markdown("### ☁️ Word Cloud")
         df_wc = helper.create_wordcloud(selected_user, df)
         fig, ax = plt.subplots(figsize=(6, 4))
         ax.imshow(df_wc)
         ax.axis('off')
-        plt.tight_layout()
         st.pyplot(fig)
-        plt.close(fig)
 
     with col2:
-        st.markdown("### 🔤 Most Common Words")
+        st.markdown("### 🗣️ Most Common Words")
         most_common_df = helper.most_common_words(selected_user, df)
-        fig, ax = plt.subplots(figsize=(6, 4))
-        ax.barh(most_common_df['word'], most_common_df['count'], color='#128C7E')
-        plt.xticks(fontsize=8)
-        plt.yticks(fontsize=8)
-        plt.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
+        
+        fig = px.bar(
+            most_common_df,
+            x='count',
+            y='word',
+            orientation='h',
+            title="Top 20 Words",
+            color='count',
+            color_continuous_scale='Teal'
+        )
+        fig.update_layout(
+            yaxis={'categoryorder': 'total ascending'},
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)'
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
 def render_trending_topics_section(df):
-    """Render trending topics section"""
-    st.markdown("## 🔥 Trending Topics by Month")
+    st.markdown("## 🔥 Trending Topics")
     topic_map = helper.trending_topics_by_month(df)
     
     if topic_map:
-        # Get the latest month 
         months = list(topic_map.keys())
-        latest_month = months[-1]
+        selected_month = st.selectbox("Select Month to View Trends", months, index=len(months) - 1)
         
-        st.markdown(f"### 📅 Latest: {latest_month}")
-        latest_topics = topic_map[latest_month]
-        words_df = pd.DataFrame(list(latest_topics.items()), columns=['Word', 'Count'])
-        st.dataframe(words_df, use_container_width=True)
-        
-        # other months 
-        if len(months) > 1:
-            st.markdown("####  View Other Months:")
-            other_months = months[:-1]  
+        if selected_month:
+            topics = topic_map[selected_month]
+            words_df = pd.DataFrame(list(topics.items()), columns=['Word', 'Count'])
             
-            cols_per_row = 4
-            for i in range(0, len(other_months), cols_per_row):
-                cols = st.columns(cols_per_row)
-                for j, month in enumerate(other_months[i:i+cols_per_row]):
-                    with cols[j]:
-                        if st.button(f"📊 {month}", key=f"month_btn_{month}"):
-                            st.markdown(f"##### Trending Topics for {month}")
-                            month_topics = topic_map[month]
-                            month_words_df = pd.DataFrame(list(month_topics.items()), columns=['Word', 'Count'])
-                            st.dataframe(month_words_df, use_container_width=True)
+            fig = px.bar(
+                words_df,
+                x='Word',
+                y='Count',
+                title=f"Trends in {selected_month}",
+                color_discrete_sequence=['#25D366']
+            )
+            fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+            st.plotly_chart(fig, use_container_width=True)
     else:
-        st.info("No trending topics data available.")
+        st.info("No trending data available.")
 
 def render_conversation_starters_section(selected_user, df):
-    """Render conversation starters and language detection section"""
-    st.markdown("## 🗣️ Conversation Starters")
+    st.markdown("## 🗣️ Conversation Drivers")
     col1, col2 = st.columns([2, 1])
     
     with col1:
         starter_counts = helper.conversation_starters(df)
-        fig, ax = plt.subplots(figsize=(8, 4))
-        ax.bar(starter_counts.index, starter_counts.values, color='#128C7E')
-        plt.xticks(rotation=45, fontsize=8)
-        plt.yticks(fontsize=8)
-        plt.title("Who starts chats most often?", fontsize=10)
-        plt.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
+        fig = px.pie(
+            values=starter_counts.values,
+            names=starter_counts.index,
+            title="Who starts conversations most often?",
+            hole=0.4,
+            color_discrete_sequence=px.colors.sequential.Teal
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
     with col2:
-        st.markdown("### 🌐 Languages Detected")
+        st.markdown("### 🌐 Languages")
         lang_df = helper.detect_languages(selected_user, df)
-        st.dataframe(lang_df, use_container_width=True)
+        st.dataframe(lang_df, use_container_width=True, hide_index=True)
 
 def render_timeline_section(selected_user, df):
-    """Render timeline analysis section"""
-    st.markdown("## 📅 Timeline Analysis")
-    col1, col2 = st.columns(2)
+    st.markdown("## 📅 Activity Timeline")
     
-    with col1:
-        st.markdown("### Monthly Timeline")
-        timeline = helper.monthly_timeline(selected_user, df)
-        fig, ax = plt.subplots(figsize=(6, 4))
-        ax.plot(timeline['time'], timeline['message'], color='#25D366', linewidth=2)
-        plt.xticks(rotation=45, fontsize=8)
-        plt.yticks(fontsize=8)
-        plt.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
+    st.markdown("### Monthly Traffic")
+    timeline = helper.monthly_timeline(selected_user, df)
+    fig = px.line(
+        timeline,
+        x='time',
+        y='message',
+        markers=True,
+        labels={'time': 'Month', 'message': 'Messages'},
+        color_discrete_sequence=['#128C7E']
+    )
+    fig.update_layout(xaxis_tickangle=-45, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+    st.plotly_chart(fig, use_container_width=True)
 
-    with col2:
-        st.markdown("### Daily Timeline")
-        daily_timeline = helper.daily_timeline(selected_user, df)
-        fig, ax = plt.subplots(figsize=(6, 4))
-        ax.plot(daily_timeline['only_date'], daily_timeline['message'], color='#075E54', linewidth=2)
-        plt.xticks(rotation=45, fontsize=8)
-        plt.yticks(fontsize=8)
-        plt.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
+    st.markdown("### Daily Traffic")
+    daily_timeline = helper.daily_timeline(selected_user, df)
+    fig = px.line(
+        daily_timeline,
+        x='only_date',
+        y='message',
+        labels={'only_date': 'Date', 'message': 'Messages'},
+        color_discrete_sequence=['#25D366']
+    )
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+    st.plotly_chart(fig, use_container_width=True)
 
 def render_activity_map_section(selected_user, df):
-    """Render activity map section"""
-    st.markdown("## 📊 Activity Map")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("###  Most Busy Day")
-        busy_day = helper.week_activity_map(selected_user, df)
-        fig, ax = plt.subplots(figsize=(5, 4))
-        ax.bar(busy_day.index, busy_day.values, color='#128C7E')
-        plt.xticks(rotation=45, fontsize=8)
-        plt.yticks(fontsize=8)
-        plt.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
-
-    with col2:
-        st.markdown("###  Most Busy Month")
-        busy_month = helper.month_activity_map(selected_user, df)
-        fig, ax = plt.subplots(figsize=(5, 4))
-        ax.bar(busy_month.index, busy_month.values, color='#25D366')
-        plt.xticks(rotation=45, fontsize=8)
-        plt.yticks(fontsize=8)
-        plt.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
-
-def render_heatmaps_section(selected_user, df):
-    """Render heatmaps section"""
+    st.markdown("## ⏰ Activity Habits")
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("##  Weekly Activity")
-        user_heatmap = helper.activity_heatmap(selected_user, df)
-        fig, ax = plt.subplots(figsize=(8, 4))
-        sns.heatmap(user_heatmap, ax=ax, cmap="YlGnBu", cbar_kws={'shrink': 0.8})
-        plt.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
+        st.markdown("### Busiest Days")
+        busy_day = helper.week_activity_map(selected_user, df)
+        fig = px.bar(
+            x=busy_day.index,
+            y=busy_day.values,
+            labels={'x': 'Day', 'y': 'Messages'},
+            color_discrete_sequence=['#128C7E']
+        )
+        fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+        st.plotly_chart(fig, use_container_width=True)
 
     with col2:
-        st.markdown("##  Hourly Activity")
-        active_hour_heatmap = helper.most_active_hour_heatmap(selected_user, df)
-        fig, ax = plt.subplots(figsize=(8, 4))
-        sns.heatmap(active_hour_heatmap, cmap="coolwarm", ax=ax, cbar_kws={'shrink': 0.8})
-        plt.tight_layout()
+        st.markdown("### Busiest Months")
+        busy_month = helper.month_activity_map(selected_user, df)
+        fig = px.bar(
+            x=busy_month.index,
+            y=busy_month.values,
+            labels={'x': 'Month', 'y': 'Messages'},
+            color_discrete_sequence=['#25D366']
+        )
+        fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+        st.plotly_chart(fig, use_container_width=True)
+
+def render_heatmaps_section(selected_user, df):
+    st.markdown("## 🔥 Activity Heatmaps")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("### Weekly Schedule")
+        user_heatmap = helper.activity_heatmap(selected_user, df)
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.heatmap(user_heatmap, ax=ax, cmap="YlGnBu")
         st.pyplot(fig)
-        plt.close(fig)
+
+    with col2:
+        st.markdown("### Hourly Habits")
+        active_hour_heatmap = helper.most_active_hour_heatmap(selected_user, df)
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.heatmap(active_hour_heatmap, ax=ax, cmap="Greens")
+        st.pyplot(fig)
 
 def render_emoji_sentiment_section(selected_user, df):
-    """Render emoji and sentiment analysis section"""
-    st.markdown("## 😄 Emoji & Sentiment Analysis")
-    col1, col2, col3 = st.columns(3)
+    st.markdown("## 😄 Emotions & Emojis")
+    col1, col2 = st.columns([1, 1])
     
     with col1:
         st.markdown("### Top Emojis")
         emoji_df = helper.emoji_helper(selected_user, df)
-        st.dataframe(emoji_df.head(10), use_container_width=True)
-        
-    with col2:
-        st.markdown("### Emoji Distribution")
-        fig, ax = plt.subplots(figsize=(5, 4))
-        ax.pie(emoji_df['count'].head(5), labels=emoji_df['emoji'].head(5), autopct="%0.1f%%")
-        plt.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
+        fig = px.pie(
+            emoji_df.head(10),
+            values='count',
+            names='emoji',
+            title='Top 10 Emojis',
+            hole=0.3
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
-    with col3:
+    with col2:
         st.markdown("### Sentiment Analysis")
         sentiments = helper.sentiment_analysis(selected_user, df)
-        labels = list(sentiments.keys())
-        values = list(sentiments.values())
-        fig, ax = plt.subplots(figsize=(5, 4))
-        ax.pie(values, labels=labels, autopct='%1.1f%%', colors=['#25D366', '#FF4B4B', '#AAAAAA'])
-        ax.axis('equal')
-        plt.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
+        sentiment_df = pd.DataFrame(list(sentiments.items()), columns=['Sentiment', 'Count'])
+        
+        fig = px.bar(
+            sentiment_df,
+            x='Sentiment',
+            y='Count',
+            color='Sentiment',
+            color_discrete_map={
+                'positive': '#25D366',
+                'negative': '#FF4B4B',
+                'neutral': '#AAAAAA'
+            }
+        )
+        fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+        st.plotly_chart(fig, use_container_width=True)
 
 def render_analysis_sections(selected_user, df):
-    """Render all analysis sections"""
     render_longest_message_section(df)
     render_most_active_users_section(selected_user, df)
     render_text_analysis_section(selected_user, df)
-    render_trending_topics_section(df)
-    render_conversation_starters_section(selected_user, df)
     render_timeline_section(selected_user, df)
     render_activity_map_section(selected_user, df)
     render_heatmaps_section(selected_user, df)
     render_emoji_sentiment_section(selected_user, df)
+    render_trending_topics_section(df)
+    render_conversation_starters_section(selected_user, df)
