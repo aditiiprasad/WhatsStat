@@ -1,3 +1,5 @@
+# config/settings.py
+
 # Configuration settings for the WhatsApp analyzer
 
 # App Configuration

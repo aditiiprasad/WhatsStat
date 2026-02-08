@@ -1,14 +1,33 @@
+# preprocessor.py
 import re
 import pandas as pd
 
 def preprocess(data):
-    pattern = r'\d{1,2}/\d{1,2}/\d{2,4},\s\d{1,2}:\d{2}\s[AP]M\s-\s'
     data = data.replace('\u202f', ' ')
-    messages = re.split(pattern, data)[1:]
-    dates = re.findall(pattern, data)
+    
+    is_ios = data.strip().startswith('[')
 
-    df = pd.DataFrame({'user_message': messages, 'message_date': dates})
-    df['message_date'] = pd.to_datetime(df['message_date'], format='%m/%d/%y, %I:%M %p - ')
+    if is_ios:
+        pattern = r'\[\d{1,2}/\d{1,2}/\d{2,4},\s\d{1,2}:\d{2}:\d{2}\]'
+        
+        messages = re.split(pattern, data)[1:]
+        dates = re.findall(pattern, data)
+        
+        dates = [d.strip("[]") for d in dates]
+        
+        df = pd.DataFrame({'user_message': messages, 'message_date': dates})
+        df['message_date'] = pd.to_datetime(df['message_date'], format='mixed', dayfirst=True)
+
+    else:
+        pattern = r'\d{1,2}/\d{1,2}/\d{2,4},\s\d{1,2}:\d{2}(?:\s[APap][Mm])?\s-\s'
+        
+        messages = re.split(pattern, data)[1:]
+        dates = re.findall(pattern, data)
+        
+        df = pd.DataFrame({'user_message': messages, 'message_date': dates})
+        df['message_date'] = df['message_date'].str.replace(' - ', '')
+        df['message_date'] = pd.to_datetime(df['message_date'], format='mixed', dayfirst=False)
+
     df.rename(columns={'message_date': 'date'}, inplace=True)
 
     users = []
@@ -16,6 +35,7 @@ def preprocess(data):
 
     for message in df['user_message']:
         entry = re.split(r'([\w\W]+?):\s', message)
+        
         if len(entry) >= 3:
             users.append(entry[1])
             message_texts.append(" ".join(entry[2:]))

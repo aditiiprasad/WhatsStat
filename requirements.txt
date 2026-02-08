@@ -1,3 +1,5 @@
+# requirements.txt
+
 streamlit
 pandas
 matplotlib

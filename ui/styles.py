@@ -1,3 +1,4 @@
+# ui/styles.py
 import streamlit as st
 
 def load_css_file(file_path):
