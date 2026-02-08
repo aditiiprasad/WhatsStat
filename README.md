@@ -114,11 +114,13 @@ streamlit
 pandas
 matplotlib
 seaborn
+urlextract
 wordcloud
 emoji
 textblob
 langdetect
-urlextract
+plotly
+fpdf
 ```
 
 ## 📁 Project Structure

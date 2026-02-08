@@ -3,6 +3,7 @@ import preprocessor
 import helper
 from ui.components import render_header, render_sidebar, render_stats_section, render_analysis_sections
 from ui.styles import apply_custom_css
+import pdf_generator
 
 st.set_page_config(layout='wide', page_title="WhatsStat - WhatsApp Chat Analyzer")
 
@@ -68,6 +69,31 @@ if data is not None:
     if st.session_state.analysis_done:
         render_stats_section(selected_user, df)
         render_analysis_sections(selected_user, df)
+
+        st.markdown("---")
+        st.subheader("📥 Export Report")
+        
+        if st.button("📄 Generate PDF Report"):
+            
+            num_messages, words, num_media, num_links = helper.fetch_stats(selected_user, df)
+            most_busy_users = helper.most_busy_users(df)
+            emoji_df = helper.emoji_helper(selected_user, df)
+            daily_timeline = helper.daily_timeline(selected_user, df)
+            
+          
+            pdf_bytes = pdf_generator.create_pdf(
+                selected_user, num_messages, words, num_media, num_links, 
+                most_busy_users, emoji_df, daily_timeline
+            )
+            
+            
+            st.download_button(
+                label="⬇️ Download PDF Result",
+                data=pdf_bytes,
+                file_name=f"WhatsStat_Report_{selected_user}.pdf",
+                mime="application/pdf"
+            )
+        
 
 st.markdown("""
 <hr style="margin-top: 50px; border: none; border-top: 2px solid #25D366;" />

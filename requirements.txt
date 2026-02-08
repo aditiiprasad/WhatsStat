@@ -10,3 +10,4 @@ emoji
 textblob
 langdetect
 plotly
+fpdf
